@@ -16,8 +16,8 @@ void mem_init(char* mem, size_t taille)
 
 void* mem_alloc(size_t size)
 {
-    //struct fb* ptrHead = (struct fb*) get_memory_adr();
-    //struct fb* ptrBefore = ptrHead;
+    struct fb* ptrHead = (struct fb*) get_memory_adr();
+    struct fb* ptrBefore = ptrHead;
 
     return NULL;
 }
