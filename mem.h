@@ -2,6 +2,8 @@
 #define __MEM_H
 #include <stddef.h>
 
+typedef struct fb fb;
+
 struct fb{
     size_t size;
     struct fb *next;

@@ -6,7 +6,7 @@
 
 void mem_init(char* mem, size_t taille)
 {
-    struct fb* ptrHead = (struct fb*) mem;
+    fb* ptrHead = *(struct fb**) mem;
     ptrHead->size = taille - sizeof(struct fb);
     ptrHead->next = NULL;
     mem_fit(&mem_fit_first);
