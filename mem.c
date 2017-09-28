@@ -6,7 +6,8 @@
 
 void mem_init(char* mem, size_t taille)
 {
-    fb* ptrHead = *(struct fb**) mem;
+    fb* ptrHead = *(fb**) mem;
+	ptrHead->busy = "0";
     ptrHead->size = taille - sizeof(struct fb);
     ptrHead->next = NULL;
     mem_fit(&mem_fit_first);
@@ -16,14 +17,21 @@ void mem_init(char* mem, size_t taille)
 
 void* mem_alloc(size_t size)
 {
-    struct fb* ptrHead = (struct fb*) get_memory_adr();
-    struct fb* ptrBefore = ptrHead;
+	//can allocate to not-2-power address ?
 
-    return NULL;
+    fb* ptrHead = *(fb**) get_memory_adr();
+    ptrNew = mem_fit_first(ptrHead, size);
+	if (ptrNew == NULL)
+		return NULL;
+	ptrNew->busy = "1";
+	ptrNew->size = size;
+	ptrNew->next = NULL;
+	ptrHead = ptrHead + size + sizeof(struct fb);
+	return ptrNew;
 }
 
 
-void mem_free(void* ptr)
+void mem_free(void* zone)
 {
     return;
 }
@@ -40,9 +48,18 @@ void mem_fit(mem_fit_function_t* ptr)
     return;
 }
 
-struct fb* mem_fit_first(struct fb* stct, size_t size)
+struct fb* mem_fit_first(fb* list, size_t size)
 {
-    return NULL;
+    fb* ptrHead = list;
+    fb* ptrCurrent = ptrHead;
+    while(ptrCurrent!=NULL && ptrCurrent->size <= size+sizeof(struct fb)){
+        ptrCurrent = ptrCurrent->next;
+    }
+    if(ptrCurrent->size >= size){
+        return ptrCurrent;
+    }else {
+        return NULL;
+    }
 }
 
 
