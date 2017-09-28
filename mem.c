@@ -9,10 +9,9 @@ void mem_init(char* mem, size_t taille)
     fb* ptrHead = *(fb**) mem;
     ptrHead->size = taille;
     ptrHead->next = NULL;
+    printf("Laul\n");
     mem_fit(&mem_fit_first);
 }
-
-
 
 void* mem_alloc(size_t size)
 {
@@ -36,8 +35,11 @@ void* mem_alloc(size_t size)
             ptrNewFb->size = ptrHead->size - size - sizeof( fb); // Calcul de la nouvelle taille de la zone libre
 
         }else{
-            //Dans le cas contraire on link l'element précedent avec l'élément suivant de ptrFreeBloc
+          //Dans le cas contraire on link l'element précedent avec l'élément suivant de ptrFreeBloc si il n'est pas NULL
+          if(ptrFreeBloc->next != NULL)
             ptrPreviousBlock->next = ptrFreeBloc->next;
+          else
+            ptrPreviousBlock->next = NULL;
         }
 
         ptrBuzyBlock = (bb *) ptrFreeBloc;
@@ -46,14 +48,7 @@ void* mem_alloc(size_t size)
 
         return ptrNewBlock;
     }
-    /*	if (ptrNew == NULL)
-    		return NULL;
-    	ptrNew->busy = "1";
-    	ptrNew->size = size;
-    	ptrNew->next = NULL;
-    	ptrHead = ptrHead + size + sizeof(struct fb);
-    	return ptrNew;
-    */
+    
     return NULL;
 }
 
