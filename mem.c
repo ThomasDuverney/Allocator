@@ -10,12 +10,11 @@ void mem_init(char* mem, size_t taille)
     fb_t* ptrHead = *((fb_t**) mem);
     ptrHead->size = taille;
     ptrHead->next = NULL;
-    //mem_fit(mem_fit_first);
+    mem_fit(mem_fit_first);
 }
 
 void* mem_alloc(size_t size)
 {
-	//can allocate to not-2-power address ?
     void * ptrNewBlock; // l'adresse du block à allouer
     fb_t * ptrPreviousBlock;
     bb_t * ptrBuzyBlock;  // le pointeur de la structure busy block
@@ -30,10 +29,12 @@ void* mem_alloc(size_t size)
     if(ptrFreeBlock != NULL){
         ptrPreviousBlock = find_prev_element(ptrFreeBlock);
         if(ptrPreviousBlock != NULL){
-
             if(ptrPreviousBlock == ptrHead){                                                           // Dans le cas ou l'élément précédent est ma tête
                 fb_t * ptrNewfb = (fb_t*)((char*)ptrFreeBlock + size + sizeof(bb_t));                  // On place une nouvelle structure fb_t après la zone alloué
-                ptrNewfb->size = ptrHead->size - size - sizeof(fb_t);                                  // Calcul de la nouvelle taille de la zone libre
+                ptrNewfb->size = ptrHead->size - size - sizeof(fb_t);
+                                                // Calcul de la nouvelle taille de la zone libre
+                ptrNewfb->next = NULL;
+                ptrHead = ptrNewfb;
 
             }else{
               //Dans le cas contraire on link l'element précedent avec l'élément suivant de ptrFreeBloc si il n'est pas NULL
@@ -72,7 +73,6 @@ void mem_show(void (*print)(void * ptr, size_t size, int free))
         {
             print(ptrCurrent, ((fb_t*)ptrCurrent)->size, 0);
             ptrCurrent = (char*)ptrCurrent + ((fb_t*)ptrCurrent)->size + sizeof(fb_t);
-            ptrFreeBlock = ptrFreeBlock->next;
         }
         else
         {
