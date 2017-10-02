@@ -2,8 +2,8 @@
 #define __MEM_H
 #include <stddef.h>
 
-typedef struct fb fb;
-typedef struct bb bb;
+typedef struct fb fb_t;
+typedef struct bb bb_t;
 
 /* Struct for free block*/
 struct fb{
@@ -24,15 +24,15 @@ size_t mem_get_size(void * ptr);
 void mem_show(void (*print)(void *, size_t size, int free));
 
 /* Choix de la strategie et strategies usuelles */
-typedef struct fb* (mem_fit_function_t)(struct fb *, size_t);
+typedef fb_t * (mem_fit_function_t)(fb_t *, size_t);
 
 void mem_fit(mem_fit_function_t* ptr);
-struct fb* mem_fit_first(struct fb* stct, size_t size);
+fb_t* mem_fit_first(fb_t* stct, size_t size);
 
 /* Si vous avez le temps */
-struct fb* mem_fit_best(fb* stct, size_t size);
-struct fb* mem_fit_worst(struct fb* stct, size_t size);
+fb_t* mem_fit_best(fb_t* stct, size_t size);
+fb_t* mem_fit_worst(fb_t* stct, size_t size);
 
 /* Function to find the previous element of ptrFreeBloc*/
-struct fb* find_preced_element(fb* ptrFreeBloc);
+fb_t* find_prev_element(fb_t* ptrFreeBloc);
 #endif
