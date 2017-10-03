@@ -34,7 +34,7 @@ void* mem_alloc(size_t size)
                 ptrNewfb->size = ptrHead->size - size - sizeof(fb_t);
                                                 // Calcul de la nouvelle taille de la zone libre
                 ptrNewfb->next = NULL;
-                ptrHead = ptrNewfb;
+                *((fb_t**) get_memory_adr()) = ptrNewfb;
 
             }else{
               //Dans le cas contraire on link l'element précedent avec l'élément suivant de ptrFreeBloc si il n'est pas NULL
