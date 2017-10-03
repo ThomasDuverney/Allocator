@@ -58,8 +58,12 @@ void* mem_alloc(size_t size)
 
 void mem_free(void* zone)
 {
-	// fb_t* ptrHead = *(fb_t**) get_memory_adr();
-	// fb_t* ptrFreeBefore = f
+	fb_t* ptrHead = *(fb_t**) get_memory_adr();
+	fb_t* ptrFreeBefore = find_prev_free_block((char*)zone);
+
+    //if (((char*)ptrFreeBefore + size(fb_t) + ptrFreeBefore->size) < zone)   //block preceeding zone is busy
+        //test block following zone
+
 	// if (ptrHead == NULL)	//memory full
 
 
