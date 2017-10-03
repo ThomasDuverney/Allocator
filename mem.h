@@ -34,5 +34,5 @@ fb_t* mem_fit_best(fb_t* stct, size_t size);
 fb_t* mem_fit_worst(fb_t* stct, size_t size);
 
 /* Function to find the previous element of ptrFreeBloc*/
-fb_t* find_prev_element(fb_t* ptrFreeBloc);
+fb_t* find_prev_free_block(char* ptrBlock);
 #endif

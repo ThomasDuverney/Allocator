@@ -27,7 +27,7 @@ void* mem_alloc(size_t size)
     }
 
     if(ptrFreeBlock != NULL){
-        ptrPreviousBlock = find_prev_element(ptrFreeBlock);
+        ptrPreviousBlock = find_prev_free_block((char*)ptrFreeBlock);
         if(ptrPreviousBlock != NULL){
             if(ptrPreviousBlock == ptrHead){                                                           // Dans le cas ou l'élément précédent est ma tête
                 fb_t * ptrNewfb = (fb_t*)((char*)ptrFreeBlock + size + sizeof(bb_t));                  // On place une nouvelle structure fb_t après la zone alloué
@@ -58,6 +58,19 @@ void* mem_alloc(size_t size)
 
 void mem_free(void* zone)
 {
+	// fb_t* ptrHead = *(fb_t**) get_memory_adr();
+	// fb_t* ptrFreeBefore = f
+	// if (ptrHead == NULL)	//memory full
+
+
+
+
+	// zone = (bb_t*) zone;
+	// fb_t* newFb;
+	// newFb->size = (sizeof(bb_t) + zone->size) - sizeof(fb_t);
+
+
+
     return;
 }
 
@@ -115,15 +128,28 @@ fb_t * mem_fit_worst(fb_t* stct, size_t size)
     return NULL;
 }
 
-fb_t * find_prev_element(fb_t* ptrFreeBlock){
+fb_t * find_prev_free_block(char* ptrBlock){
     fb_t* ptrHead = *(fb_t**) get_memory_adr();
     fb_t* ptrCurrent = ptrHead;
     fb_t* ptrBefore;
 
-    while(ptrCurrent!=NULL &&  ptrCurrent < ptrFreeBlock){
+    while(ptrCurrent!=NULL &&  (char*)ptrCurrent < ptrBlock){
          ptrBefore = ptrCurrent;
          ptrCurrent = ptrCurrent->next;
     }
 
     return ptrBefore;
 }
+
+// fb_t * find_prev_element(fb_t* ptrBlock){
+//     fb_t* ptrHead = *(fb_t**) get_memory_adr();
+//     fb_t* ptrCurrent = ptrHead;
+//     fb_t* ptrBefore;
+
+//     while(ptrCurrent!=NULL &&  ptrCurrent < ptrFreeBlock){
+//          ptrBefore = ptrCurrent;
+//          ptrCurrent = ptrCurrent->next;
+//     }
+
+//     return ptrBefore;
+//}
