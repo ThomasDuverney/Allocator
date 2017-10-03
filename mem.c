@@ -60,21 +60,26 @@ void mem_free(void* zone)
 {
 	fb_t* ptrHead = *(fb_t**) get_memory_adr();
 	fb_t* ptrFreeBefore = find_prev_free_block((char*)zone);
+  void * ptrZoneToFree = zone - sizeof(bb_t);
 
+  //Dans le cas ou il n'y a pas d'élément à gauche dans la liste
+  if(ptrFreeBefore == NULL){
+    //On vérifie si il n'y a pas une structure fb_t juste après la zone à libérer
+    if((char *)zone + ((bb_t)zone)->size ==  ptrHead->next ){
+      // On fusionne les zones et refait le linkage avec ptrHEAD
+    }else{
+      //On refait le linkage
+    }
+    // Dans le cas ou il y'a un element à gauche de la liste et que cette element précede la zone à libérer
+  }else if( ptrFreeBefore!=NULL && ((char*)ptrFreeBefore)+ ptrFreeBefore->size == ptrZoneToFree){
+
+  }
     //if (((char*)ptrFreeBefore + size(fb_t) + ptrFreeBefore->size) < zone)   //block preceeding zone is busy
         //test block following zone
-
 	// if (ptrHead == NULL)	//memory full
-
-
-
-
 	// zone = (bb_t*) zone;
 	// fb_t* newFb;
 	// newFb->size = (sizeof(bb_t) + zone->size) - sizeof(fb_t);
-
-
-
     return;
 }
 
@@ -88,12 +93,12 @@ void mem_show(void (*print)(void * ptr, size_t size, int free))
     {
         if (ptrCurrent == (char*)ptrFreeBlock)
         {
-            print(ptrCurrent, ((fb_t*)ptrCurrent)->size, 0);
+            print(ptrCurrent, ((fb_t*)ptrCurrent)->size, 1);
             ptrCurrent = (char*)ptrCurrent + ((fb_t*)ptrCurrent)->size + sizeof(fb_t);
         }
         else
         {
-            print(ptrCurrent, ((bb_t*)ptrCurrent)->size, 1);
+            print(ptrCurrent, ((bb_t*)ptrCurrent)->size, 0);
             ptrCurrent = (char*)ptrCurrent + ((bb_t*)ptrCurrent)->size + sizeof(bb_t);
         }
     } while(ptrCurrent < (char*)(get_memory_adr() + get_memory_size()));
