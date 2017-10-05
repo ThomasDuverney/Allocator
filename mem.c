@@ -17,48 +17,63 @@ void* mem_alloc(size_t size)
 {
     void * ptrNewBlock; // l'adresse du block à allouer
     fb_t * ptrPreviousBlock;
-    bb_t * ptrBuzyBlock;  // le pointeur de la structure busy block
+    bb_t * ptrBusyBlock;  // le pointeur de la structure busy block
 
     if(size < sizeof(fb_t)){ // On vérifie que la taille demandée à allouer n'est pas trop petite
         size = sizeof(fb_t);
     }
 
-    fb_t* ptrHead = *(fb_t**) get_memory_adr();
-    fb_t* ptrFreeBlock = mem_fit_first(ptrHead, size);
+    fb_t* ptrHead = *(fb_t**) get_memory_adr();			// pointeur tête
+    fb_t* ptrFreeBlock = mem_fit_first(ptrHead, size);	//pointeur sur le premier bloc libre de taille suffisante
 
     if(ptrFreeBlock != NULL){
-        // FONCTIONNE PAS ! 
-        /*if(size + sizeof(bb_t) < ptrFreeBlock->size + sizeof(fb_t)){
-            size = ptrFreeBlock->size + sizeof(fb_t) - sizeof(bb_t);    //filling the full zone
-        }*/
+        //padding when cannot add structure + 1oct after the block newly allocated
+		if (size >= ptrFreeBlock->size - sizeof(bb_t))
+			size = sizeof(fb_t) + ptrFreeBlock->size - sizeof(bb_t);
+
+
         ptrPreviousBlock = find_prev_free_block((char*)ptrFreeBlock);
-        // Dans le cas ou la zone à alloué fait exactement la taille de la zone libre on ne créait pas de structure fb_t après la zone à alloué
-        if(ptrFreeBlock->size  - sizeof(bb_t) == size){
-            if(ptrPreviousBlock == NULL){
+        // Dans le cas ou la zone à allouer fait exactement la taille de la zone libre on ne créait pas de structure fb_t après la zone à allouer
+        if(size == sizeof(fb_t) + ptrFreeBlock->size - sizeof(bb_t))
+        {
+            if(ptrPreviousBlock == NULL){	//aucun bloc libre avant le bloc libre qui est assez grand
                 *((fb_t**) get_memory_adr()) = ptrFreeBlock->next;
             }else{
                 ptrPreviousBlock->next = ptrFreeBlock->next;
             }
         }else{
-             // Dans le cas ou l'élément précédent est ma tête
-            if(ptrPreviousBlock == NULL){
-                fb_t * ptrNewfb = (fb_t*)((char*)ptrFreeBlock + size + sizeof(bb_t));// On place une nouvelle structure fb_t après la zone alloué
-                ptrNewfb->size = ptrHead->size - size - sizeof(bb_t);// Calcul de la nouvelle taille de la zone libre
-                ptrNewfb->next = NULL;
-                *((fb_t**) get_memory_adr()) = ptrNewfb;
-
-            }else{
-              //Dans le cas contraire on link l'element précedent avec l'élément suivant de ptrFreeBloc si il n'est pas NULL
-              if(ptrFreeBlock->next != NULL)
-                ptrPreviousBlock->next = ptrFreeBlock->next;
-              else
-                ptrPreviousBlock->next = NULL;
+            if(ptrPreviousBlock == NULL){	//aucun bloc libre avant le bloc libre qui est assez grand
+            		fb_t * ptrNewfb = (fb_t*)((char*)ptrFreeBlock + size + sizeof(bb_t));// On place une nouvelle structure fb_t après la zone allouée
+	                ptrNewfb->size = ptrFreeBlock->size - size - sizeof(bb_t);// Calcul de la nouvelle taille de la zone libre
+	                ptrNewfb->next = ptrFreeBlock->next;
+	                *((fb_t**) get_memory_adr()) = ptrNewfb;
             }
+            else{	//Il y a des blocs libres avant
+            		fb_t * ptrNewfb = (fb_t*)((char*)ptrFreeBlock + size + sizeof(bb_t));// On place une nouvelle structure fb_t après la zone allouée
+	                ptrNewfb->size = ptrFreeBlock->size - size - sizeof(bb_t);// Calcul de la nouvelle taille de la zone libre
+	                ptrNewfb->next = ptrFreeBlock->next;
+
+	                ptrPreviousBlock->next = ptrNewfb;
+             	
+
+             	// USELESS STUFF ??!! ptrPreviousBlock->next = ptrFreeBlock->next; direct ??
+
+            
+
+            }
+
+            
+           	//Dans le cas contraire on link l'element précedent avec l'élément suivant de ptrFreeBloc si il n'est pas NULL
+            //   if(ptrFreeBlock->next != NULL)
+            //     ptrPreviousBlock->next = ptrFreeBlock->next;
+            //   else
+            //     ptrPreviousBlock->next = NULL;
+            // }
         }
 
-        ptrBuzyBlock = (bb_t *) ptrFreeBlock;
-        ptrBuzyBlock->size = size;
-        ptrNewBlock = (char *) ptrBuzyBlock +  sizeof(bb_t);
+        ptrBusyBlock = (bb_t *) ptrFreeBlock;
+        ptrBusyBlock->size = size;
+        ptrNewBlock = (char *) ptrBusyBlock +  sizeof(bb_t);	// à changer si on veut placer le pointeur de la zone après la struct
 
         return ptrNewBlock;
 
@@ -68,12 +83,13 @@ void* mem_alloc(size_t size)
 }
 
 
+//valeur get_memory_adr() bien gérée ?
 void mem_free(void* zone){
     fb_t* ptrHead = *(fb_t**) get_memory_adr();
 	  fb_t* ptrFreeBefore = find_prev_free_block((char*)zone);
     bb_t * ptrZoneToFree = (bb_t *)(zone - sizeof(bb_t));
 
-  //Dans le cas ou il n'y a pas d'élément à gauche dans la liste des zones libres
+  //Dans le cas ou il n'y a aucune zone libre avant
   if(ptrFreeBefore == NULL){
             //On vérifie si il y a pas une structure fb_t juste après la zone à libérer
             if( zone + ptrZoneToFree->size ==  (char*)ptrHead ){
@@ -170,10 +186,10 @@ fb_t * mem_fit_worst(fb_t* stct, size_t size)
 fb_t * find_prev_free_block(char* ptrBlock){
     fb_t* ptrHead = *(fb_t**) get_memory_adr();
     fb_t* ptrCurrent = ptrHead;
-    fb_t* ptrBefore;
-    if( (char*)ptrCurrent < ptrBlock){
+    fb_t* ptrBefore = NULL;
+    if((char*)ptrCurrent < ptrBlock){
 
-        while(ptrCurrent!=NULL &&  (char*)ptrCurrent < ptrBlock){
+        while(ptrCurrent != NULL &&  (char*)ptrCurrent < ptrBlock){
              ptrBefore = ptrCurrent;
              ptrCurrent = ptrCurrent->next;
         }
