@@ -82,18 +82,23 @@ void mem_free(void* zone){
 	  fb_t* ptrFreeBefore = find_prev_free_block((char*)zone);
     bb_t * ptrZoneToFree = (bb_t *)(zone - sizeof(bb_t));
 
-    if( zone > get_memory_adr() + get_memory_size() || !is_on_busy_struct((char *)ptrZoneToFree)){
-        printf("L'adresse mémoire à libérer n'est pas correcte\n");
+    if( zone > get_memory_adr() + get_memory_size()){
+        printf("L'adresse mémoire à libérer n'existe pas !\n");
         return;
     }
-        //Dans le cas ou il n'y a aucune zone libre avant
+    else if (!is_on_busy_struct((char *)ptrZoneToFree))
+    {
+    	printf("L'adresse mémoire à libérer n'est pas correcte !\n");
+        return;  
+    }
+    //Dans le cas ou il n'y a aucune zone libre avant
     if(ptrFreeBefore == NULL){
             //On vérifie si il y a pas une structure fb_t juste après la zone à libérer
             if( zone + ptrZoneToFree->size ==  (char*)ptrHead ){
-              // On fusionne les zones et refait le linkage avec ptrHEAD
-              ((fb_t *)ptrZoneToFree)->size = ptrZoneToFree->size + sizeof(bb_t)+ ptrHead->size;
-              ((fb_t *)ptrZoneToFree)->next = ptrHead->next;
-
+             	// On fusionne les zones et refait le linkage avec ptrHEAD
+             	((fb_t *)ptrZoneToFree)->size = ptrZoneToFree->size + sizeof(bb_t)+ ptrHead->size;
+            	((fb_t *)ptrZoneToFree)->next = ptrHead->next;
+            	printf("Info : Fusion du bloc libre avec le bloc libre suivant !\n");
             }else{
                 ((fb_t *)ptrZoneToFree)->size = ptrZoneToFree->size + sizeof(bb_t) - sizeof(fb_t);
                 ((fb_t *)ptrZoneToFree)->next = ptrHead;
@@ -102,15 +107,15 @@ void mem_free(void* zone){
 
     // Dans le cas ou il y'a un element à gauche dans la liste des zones libres
     }else {
-        fb_t * ptrNewFb;
+        fb_t * ptrNewFb = NULL;
 
          // Dans le cas où cet élement précede la zone à libérer
         if( (char*)ptrFreeBefore+ ptrFreeBefore->size + sizeof(fb_t) == (char*)ptrZoneToFree){
             ptrNewFb = ptrFreeBefore;
             ptrNewFb->size = ptrFreeBefore->size + sizeof(bb_t) + ptrZoneToFree->size;
             ptrNewFb->next  = ptrFreeBefore->next;
-            /* INITIALISER LE NEXT SI ÇA PETE ! */
-        // Dans le cas où cette élement ne précède pas la zone à libérer
+            printf("Info : Fusion du bloc libre avec le bloc libre précédent !\n");
+        // Dans le cas où cet élement ne précède pas la zone à libérer
         }else{
             ptrNewFb = (fb_t *) ptrZoneToFree;
             ptrNewFb->size = ptrZoneToFree->size + sizeof(bb_t) - sizeof(fb_t);
@@ -122,6 +127,7 @@ void mem_free(void* zone){
             ptrNewFb->size += ptrFreeBefore->next->size + sizeof(fb_t);
             ptrNewFb->next = ptrFreeBefore->next->next;
             ptrFreeBefore->next = ptrNewFb;
+            printf("Info : Fusion du bloc libre avec le bloc libre suivant !\n");
         }
 
     }
