@@ -34,9 +34,10 @@ void* mem_alloc(size_t size)
 
     if(ptrFreeBlock != NULL){
         //padding when cannot add structure + 1oct after the block newly allocated
-        if (size > ptrFreeBlock->size - sizeof(bb_t))
+        if ((size > ptrFreeBlock->size - sizeof(bb_t)) && (size < sizeof(fb_t) + ptrFreeBlock->size - sizeof(bb_t)))
         {
 			size = sizeof(fb_t) + ptrFreeBlock->size - sizeof(bb_t);
+			printf("Info: La taille à allouer a été augmentée pour remplir le reste du bloc mémoire !\n");
         }
 
 
@@ -50,26 +51,27 @@ void* mem_alloc(size_t size)
                 ptrPreviousBlock->next = ptrFreeBlock->next;
             }
         }else{
+        	fb_t * ptrNewfb = NULL;
             if(ptrPreviousBlock == NULL){	//aucun bloc libre avant le bloc libre qui est assez grand
-            		fb_t * ptrNewfb = (fb_t*)((char*)ptrFreeBlock + size + sizeof(bb_t));// On place une nouvelle structure fb_t après la zone allouée
+            		ptrNewfb = (fb_t*)((char*)ptrFreeBlock + size + sizeof(bb_t));// On place une nouvelle structure fb_t après la zone allouée
 	                ptrNewfb->size = ptrFreeBlock->size - size - sizeof(bb_t);// Calcul de la nouvelle taille de la zone libre
 	                ptrNewfb->next = ptrFreeBlock->next;
 	                *((fb_t**) get_memory_adr()) = ptrNewfb;
             }
             else{	//Il y a des blocs libres avant
-            		fb_t * ptrNewfb = (fb_t*)((char*)ptrFreeBlock + size + sizeof(bb_t));// On place une nouvelle structure fb_t après la zone allouée
+            		ptrNewfb = (fb_t*)((char*)ptrFreeBlock + size + sizeof(bb_t));// On place une nouvelle structure fb_t après la zone allouée
 	                ptrNewfb->size = ptrFreeBlock->size - size - sizeof(bb_t);// Calcul de la nouvelle taille de la zone libre
 	                ptrNewfb->next = ptrFreeBlock->next;
 	                ptrPreviousBlock->next = ptrNewfb;
             }
-            printf("Info: La taille à allouer a été augmentée pour remplir le reste du bloc mémoire !\n");
+            printf("Info : Nouvelle zone libre créée : taille %lu !\n", ptrNewfb->size + sizeof(bb_t));
         }
 
         ptrBusyBlock = (bb_t *) ptrFreeBlock;
         ptrBusyBlock->size = size;
         ptrNewBlock = (char *) ptrBusyBlock +  sizeof(bb_t);	// à changer si on veut placer le pointeur de la zone après la struct
 
-        return ptrNewBlock;
+        return ptrNewBlock;	
 
     }
 
