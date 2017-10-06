@@ -69,7 +69,7 @@ void* mem_alloc(size_t size)
 }
 void mem_free(void* zone){
     fb_t* ptrHead = *(fb_t**) get_memory_adr();
-	fb_t* ptrFreeBefore = find_prev_free_block((char*)zone);
+	  fb_t* ptrFreeBefore = find_prev_free_block((char*)zone);
     bb_t * ptrZoneToFree = (bb_t *)(zone - sizeof(bb_t));
 
     if( zone > get_memory_adr() + get_memory_size() || !is_on_busy_struct((char *)ptrZoneToFree)){
@@ -193,11 +193,11 @@ int is_on_busy_struct(char * ptrZoneToFree){
 
     if (ptrPreviousFreeBlock == NULL)
     {
-        while (ptrCurrent + ((bb_t*)ptrCurrent)->size < ptrZoneToFree)
+        while (ptrCurrent < ptrZoneToFree)
         {
-            ptrCurrent = ptrCurrent + ((bb_t*)ptrCurrent)->size;
+            ptrCurrent += ((bb_t*)ptrCurrent)->size + sizeof(bb_t);
         }
-        if (ptrCurrent + ((bb_t*)ptrCurrent)->size == (char*)ptrZoneToFree)
+        if (ptrCurrent == (char*)ptrZoneToFree)
             return 1;
         return 0;
     }
