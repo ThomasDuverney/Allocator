@@ -36,3 +36,5 @@ test_ls: libmalloc.so
 # nettoyage
 clean:
 	rm -f *.o $(PROGRAMS) libmalloc.so .*.deps
+tests:
+	./test
