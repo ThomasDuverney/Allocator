@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+mem_fit_function_t * search_function;
 
 void mem_init(char* mem, size_t taille)
 {
@@ -24,7 +25,7 @@ void* mem_alloc(size_t size)
     }
 
     fb_t* ptrHead = *(fb_t**) get_memory_adr();			// pointeur tête
-    fb_t* ptrFreeBlock = mem_fit_first(ptrHead, size);	//pointeur sur le premier bloc libre de taille suffisante
+    fb_t* ptrFreeBlock = search_function(ptrHead, size);	//pointeur sur le premier bloc libre de taille suffisante
 
     if(ptrFreeBlock != NULL){
         //padding when cannot add structure + 1oct after the block newly allocated
@@ -141,7 +142,7 @@ void mem_show(void (*print)(void * ptr, size_t size, int free)){
 
 void mem_fit(mem_fit_function_t* ptr)
 {
-    return;
+    search_function = ptr;
 }
 
 fb_t * mem_fit_first(fb_t* list, size_t size)

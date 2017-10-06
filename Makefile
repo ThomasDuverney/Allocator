@@ -10,6 +10,10 @@ LDFLAGS= $(HOST32)
 TESTS+=test_init
 PROGRAMS=memshell $(TESTS)
 
+_IRED=$'\x1b[41m'
+_IGREEN=$'\x1b[42m'
+_END=$'\x1b[0m'
+
 .PHONY: clean all test_ls
 
 all: $(PROGRAMS)
@@ -36,3 +40,8 @@ test_ls: libmalloc.so
 # nettoyage
 clean:
 	rm -f *.o $(PROGRAMS) libmalloc.so .*.deps
+
+test:
+	echo " ${_IRED}Lancement des tests sur l'allocateur${_END}"
+	./memshell < file_test
+	echo 'Test ok'

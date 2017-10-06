@@ -35,4 +35,6 @@ fb_t* mem_fit_worst(fb_t* stct, size_t size);
 
 /* Function to find the previous element of ptrFreeBloc*/
 fb_t* find_prev_free_block(char* ptrBlock);
+
+int is_on_busy_struct(char * ptrZoneToFree);
 #endif
