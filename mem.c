@@ -21,7 +21,12 @@ void* mem_alloc(size_t size)
     bb_t * ptrBusyBlock;  // le pointeur de la structure busy block
 
     if(size < sizeof(bb_t)){ // On vérifie que la taille demandée à allouer n'est pas trop petite
+    	printf("Info : La taille à allouer a été augmentée jusqu'a la taille minimale d'allocation permise !\n");
         size = sizeof(bb_t);
+    }
+    else if(size > get_memory_size()){
+    	printf("Erreur : La taille à allouer est supérieure à la taille allouable totale !\n");
+    	return NULL;
     }
 
     fb_t* ptrHead = *(fb_t**) get_memory_adr();			// pointeur tête
@@ -30,8 +35,9 @@ void* mem_alloc(size_t size)
     if(ptrFreeBlock != NULL){
         //padding when cannot add structure + 1oct after the block newly allocated
         if (size > ptrFreeBlock->size - sizeof(bb_t))
-
+        {
 			size = sizeof(fb_t) + ptrFreeBlock->size - sizeof(bb_t);
+        }
 
 
         ptrPreviousBlock = find_prev_free_block((char*)ptrFreeBlock);
@@ -56,6 +62,7 @@ void* mem_alloc(size_t size)
 	                ptrNewfb->next = ptrFreeBlock->next;
 	                ptrPreviousBlock->next = ptrNewfb;
             }
+            printf("Info: La taille à allouer a été augmentée pour remplir le reste du bloc mémoire !\n");
         }
 
         ptrBusyBlock = (bb_t *) ptrFreeBlock;
