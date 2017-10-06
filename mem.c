@@ -19,8 +19,8 @@ void* mem_alloc(size_t size)
     fb_t * ptrPreviousBlock;
     bb_t * ptrBusyBlock;  // le pointeur de la structure busy block
 
-    if(size < sizeof(fb_t)){ // On vérifie que la taille demandée à allouer n'est pas trop petite
-        size = sizeof(fb_t);
+    if(size < sizeof(bb_t)){ // On vérifie que la taille demandée à allouer n'est pas trop petite
+        size = sizeof(bb_t);
     }
 
     fb_t* ptrHead = *(fb_t**) get_memory_adr();			// pointeur tête
@@ -28,7 +28,8 @@ void* mem_alloc(size_t size)
 
     if(ptrFreeBlock != NULL){
         //padding when cannot add structure + 1oct after the block newly allocated
-		if (size >= ptrFreeBlock->size - sizeof(bb_t))
+        if (size > ptrFreeBlock->size - sizeof(bb_t))
+
 			size = sizeof(fb_t) + ptrFreeBlock->size - sizeof(bb_t);
 
 
@@ -52,23 +53,8 @@ void* mem_alloc(size_t size)
             		fb_t * ptrNewfb = (fb_t*)((char*)ptrFreeBlock + size + sizeof(bb_t));// On place une nouvelle structure fb_t après la zone allouée
 	                ptrNewfb->size = ptrFreeBlock->size - size - sizeof(bb_t);// Calcul de la nouvelle taille de la zone libre
 	                ptrNewfb->next = ptrFreeBlock->next;
-
 	                ptrPreviousBlock->next = ptrNewfb;
-             	
-
-             	// USELESS STUFF ??!! ptrPreviousBlock->next = ptrFreeBlock->next; direct ??
-
-            
-
             }
-
-            
-           	//Dans le cas contraire on link l'element précedent avec l'élément suivant de ptrFreeBloc si il n'est pas NULL
-            //   if(ptrFreeBlock->next != NULL)
-            //     ptrPreviousBlock->next = ptrFreeBlock->next;
-            //   else
-            //     ptrPreviousBlock->next = NULL;
-            // }
         }
 
         ptrBusyBlock = (bb_t *) ptrFreeBlock;
@@ -81,7 +67,6 @@ void* mem_alloc(size_t size)
 
     return NULL;
 }
-
 
 //valeur get_memory_adr() bien gérée ?
 void mem_free(void* zone){
@@ -130,7 +115,6 @@ void mem_free(void* zone){
     }
 }
 
-
 void mem_show(void (*print)(void * ptr, size_t size, int free)){
     fb_t* ptrFreeBlock = *(fb_t**) get_memory_adr();
     char* ptrCurrent = get_memory_adr() + sizeof(char*); //first addressable memory cell
@@ -139,13 +123,13 @@ void mem_show(void (*print)(void * ptr, size_t size, int free)){
     {
         if (ptrCurrent == (char*)ptrFreeBlock)
         {
-            print(ptrCurrent + sizeof(fb_t), ((fb_t*)ptrCurrent)->size, 1);
+            print(ptrCurrent, ((fb_t*)ptrCurrent)->size + sizeof(fb_t) - sizeof(bb_t), 1);
             ptrCurrent = (char*)ptrCurrent + ((fb_t*)ptrCurrent)->size + sizeof(fb_t);
             ptrFreeBlock = ptrFreeBlock->next;
         }
         else
         {
-            print(ptrCurrent + sizeof(bb_t), ((bb_t*)ptrCurrent)->size, 0);
+            print(ptrCurrent, ((bb_t*)ptrCurrent)->size, 0);
             ptrCurrent = (char*)ptrCurrent + ((bb_t*)ptrCurrent)->size + sizeof(bb_t);
         }
     } while(ptrCurrent < (char*)(get_memory_adr() + get_memory_size()));
@@ -161,10 +145,10 @@ void mem_fit(mem_fit_function_t* ptr)
 fb_t * mem_fit_first(fb_t* list, size_t size)
 {
     fb_t* ptrCurrent = list;
-    while(ptrCurrent!=NULL && ptrCurrent->size < size+sizeof(bb_t)){
+    while(ptrCurrent!=NULL && ptrCurrent->size + sizeof(fb_t) < size + sizeof(bb_t)){
         ptrCurrent = ptrCurrent->next;
     }
-    if(ptrCurrent!=NULL && ptrCurrent->size >= size+sizeof(bb_t)){
+    if(ptrCurrent!=NULL && ptrCurrent->size +sizeof(fb_t) >= size + sizeof(bb_t)){
         return ptrCurrent;
     }else {
         return NULL;
@@ -200,6 +184,11 @@ fb_t * find_prev_free_block(char* ptrBlock){
     }
 }
 
+int is_on_busy_struct(void * ptrZoneToFree){
+    fb_t* ptrHead = (fb_t**) get_memory_adr();
+
+}
+
 // fb_t * find_prev_element(fb_t* ptrBlock){
 //     fb_t* ptrHead = *(fb_t**) get_memory_adr();
 //     fb_t* ptrCurrent = ptrHead;
@@ -220,3 +209,12 @@ fb_t * find_prev_free_block(char* ptrBlock){
 // zone = (bb_t*) zone;
 // fb_t* newFb;
 // newFb->size = (sizeof(bb_t) + zone->size) - sizeof(fb_t);
+
+
+
+           	//Dans le cas contraire on link l'element précedent avec l'élément suivant de ptrFreeBloc si il n'est pas NULL
+            //   if(ptrFreeBlock->next != NULL)
+            //     ptrPreviousBlock->next = ptrFreeBlock->next;
+            //   else
+            //     ptrPreviousBlock->next = NULL;
+            // }
